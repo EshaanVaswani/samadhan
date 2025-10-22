@@ -20,6 +20,7 @@ import { WidgetHeader } from "@/modules/widget/ui/components/widget-header";
 import {
    contactSessionIdAtomFamily,
    organizationIdAtom,
+   screenAtom,
 } from "@/modules/widget/atoms/widget-atoms";
 
 const formSchema = z.object({
@@ -28,6 +29,8 @@ const formSchema = z.object({
 });
 
 export const WidgetAuthScreen = () => {
+   const setScreen = useSetAtom(screenAtom);
+
    const organizationId = useAtomValue(organizationIdAtom);
    const setContactSessionId = useSetAtom(
       contactSessionIdAtomFamily(organizationId || "")
@@ -68,6 +71,7 @@ export const WidgetAuthScreen = () => {
       });
 
       setContactSessionId(contactSessionId);
+      setScreen("selection");
    };
 
    return (
