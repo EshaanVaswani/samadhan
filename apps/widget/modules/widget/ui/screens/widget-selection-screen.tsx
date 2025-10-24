@@ -8,6 +8,7 @@ import { ChevronRightIcon, MessageSquareTextIcon } from "lucide-react";
 import { api } from "@workspace/backend/_generated/api";
 import { Button } from "@workspace/ui/components/button";
 import { WidgetHeader } from "@/modules/widget/ui/components/widget-header";
+import { WidgetFooter } from "@/modules/widget/ui/components/widget-footer";
 import {
    contactSessionIdAtomFamily,
    conversationIdAtom,
@@ -81,6 +82,7 @@ export const WidgetSelectionScreen = () => {
                <ChevronRightIcon />
             </Button>
          </div>
+         <WidgetFooter />
       </>
    );
 };
