@@ -1,9 +1,11 @@
 import { ConvexError, v } from "convex/values";
-import { mutation, query } from "../_generated/server";
+import { generateText } from "ai";
+import { action, mutation, query } from "../_generated/server";
 import { components } from "../_generated/api";
 import { supportAgent } from "../system/ai/agents/supportAgent";
 import { paginationOptsValidator } from "convex/server";
 import { saveMessage } from "@convex-dev/agent";
+import { google } from "@ai-sdk/google";
 
 export const create = mutation({
    args: {
@@ -38,7 +40,7 @@ export const create = mutation({
          });
       }
 
-      if(orgId !== conversation.organizationId) {
+      if (orgId !== conversation.organizationId) {
          throw new ConvexError({
             code: "UNAUTHORIZED",
             message: "Invalid organization ID",
@@ -58,8 +60,8 @@ export const create = mutation({
          message: {
             role: "assistant",
             content: args.prompt,
-         }
-      })
+         },
+      });
    },
 });
 
@@ -92,14 +94,14 @@ export const getMany = query({
          .withIndex("by_thread_id", (q) => q.eq("threadId", args.threadId))
          .unique();
 
-      if(!conversation) {
+      if (!conversation) {
          throw new ConvexError({
             code: "NOT_FOUND",
             message: "Conversation not found",
          });
       }
 
-      if(orgId !== conversation.organizationId) {
+      if (orgId !== conversation.organizationId) {
          throw new ConvexError({
             code: "UNAUTHORIZED",
             message: "Invalid organization ID",
@@ -112,5 +114,47 @@ export const getMany = query({
       });
 
       return paginated;
+   },
+});
+
+export const enhanceResponse = action({
+   args: {
+      prompt: v.string(),
+   },
+   handler: async (ctx, args) => {
+      const identity = await ctx.auth.getUserIdentity();
+
+      if (identity === null) {
+         throw new ConvexError({
+            code: "UNAUTHORIZED",
+            message: "Identity not authenticated",
+         });
+      }
+
+      const orgId = identity.org_id as string;
+
+      if (!orgId) {
+         throw new ConvexError({
+            code: "UNAUTHORIZED",
+            message: "Organization not found",
+         });
+      }
+
+      const response = await generateText({
+         model: google("gemini-2.5-flash"),
+         messages: [
+            {
+               role: "system",
+               content:
+                  "Refine the following operator's message to enhance its professionalism, clarity, and helpfulness while retaining all key information and the core intent. The output should be only the revised message, with no additional explanation or commentary.",
+            },
+            {
+               role: "user",
+               content: args.prompt,
+            },
+         ],
+      });
+
+      return response.text;
    },
 });
