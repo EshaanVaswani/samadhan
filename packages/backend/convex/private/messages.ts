@@ -6,6 +6,7 @@ import { supportAgent } from "../system/ai/agents/supportAgent";
 import { paginationOptsValidator } from "convex/server";
 import { saveMessage } from "@convex-dev/agent";
 import { google } from "@ai-sdk/google";
+import { OPERATOR_MESSAGE_ENHANCEMENT_PROMPT } from "../system/ai/constants";
 
 export const create = mutation({
    args: {
@@ -58,8 +59,6 @@ export const create = mutation({
          await ctx.db.patch(args.conversationId, {
             status: "escalated",
          });
-
-         
       }
 
       await saveMessage(ctx, components.agent, {
@@ -153,8 +152,7 @@ export const enhanceResponse = action({
          messages: [
             {
                role: "system",
-               content:
-                  "Refine the following operator's message to enhance its professionalism, clarity, and helpfulness while retaining all key information and the core intent. The output should be only the revised message, with no additional explanation or commentary.",
+               content: OPERATOR_MESSAGE_ENHANCEMENT_PROMPT,
             },
             {
                role: "user",
