@@ -37,6 +37,7 @@ import {
    type Feature,
    PluginCard,
 } from "@/modules/plugins/ui/components/plugin-card";
+import { VapiConnectedView } from "@/modules/plugins/ui/components/vapi-connected-view";
 
 const vapiFeatures: Feature[] = [
    {
@@ -167,13 +168,55 @@ const VapiPluginForm = ({
    );
 };
 
+const VapiPluginRemoveForm = ({
+   open,
+   setOpen,
+}: {
+   open: boolean;
+   setOpen: (open: boolean) => void;
+}) => {
+   const removePlugin = useMutation(api.private.plugins.remove);
+
+   const onSubmit = async () => {
+      try {
+         await removePlugin({
+            service: "vapi",
+         });
+
+         setOpen(false);
+         toast.success("Vapi plugin removed");
+      } catch (error) {
+         console.error(error);
+         toast.error("Something went wrong");
+      }
+   };
+
+   return (
+      <Dialog open={open} onOpenChange={setOpen}>
+         <DialogContent>
+            <DialogHeader>
+               <DialogTitle>Disconnect Vapi</DialogTitle>
+            </DialogHeader>
+            <DialogDescription>
+               Are you sure you want to disconnect Vapi plugin?
+            </DialogDescription>
+            <DialogFooter>
+               <Button onClick={onSubmit} variant="destructive">
+                  Disconnect
+               </Button>
+            </DialogFooter>
+         </DialogContent>
+      </Dialog>
+   );
+};
+
 export const VapiView = () => {
    const vapiPlugin = useQuery(api.private.plugins.getOne, { service: "vapi" });
 
    const [connectOpen, setConnectOpen] = useState(false);
    const [removeOpen, setRemoveOpen] = useState(false);
 
-   const handleSubmit = () => {
+   const toggleConnection = () => {
       if (vapiPlugin) {
          setRemoveOpen(true);
       } else {
@@ -194,20 +237,21 @@ export const VapiView = () => {
 
                <div className="mt-8">
                   {vapiPlugin ? (
-                     <div>plugin</div>
+                     <VapiConnectedView onDisconnect={toggleConnection} />
                   ) : (
                      <PluginCard
                         serviceImage="/vapi.jpg"
                         serviceName="Vapi"
                         features={vapiFeatures}
                         isDisabled={vapiPlugin === undefined}
-                        onSubmit={handleSubmit}
+                        onSubmit={toggleConnection}
                      />
                   )}
                </div>
             </div>
          </div>
          <VapiPluginForm open={connectOpen} setOpen={setConnectOpen} />
+         <VapiPluginRemoveForm open={removeOpen} setOpen={setRemoveOpen} />
       </>
    );
 };
