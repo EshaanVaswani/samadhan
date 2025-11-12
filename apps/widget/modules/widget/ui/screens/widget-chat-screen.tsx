@@ -1,6 +1,7 @@
 "use client";
 
 import { z } from "zod";
+import { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useAtomValue, useSetAtom } from "jotai";
 import { useAction, useQuery } from "convex/react";
@@ -41,6 +42,7 @@ import {
    conversationIdAtom,
    organizationIdAtom,
    screenAtom,
+   widgetSettingsAtom,
 } from "@/modules/widget/atoms/widget-atoms";
 import { WidgetHeader } from "@/modules/widget/ui/components/widget-header";
 
@@ -57,6 +59,7 @@ export const WidgetChatScreen = () => {
    const contactSessionId = useAtomValue(
       contactSessionIdAtomFamily(organizationId || "")
    );
+   const widgetSettings = useAtomValue(widgetSettingsAtom);
 
    const onBack = () => {
       setConversationId(null);
@@ -83,6 +86,16 @@ export const WidgetChatScreen = () => {
          : "skip",
       { initialNumItems: 10 }
    );
+
+   const suggestions = useMemo(() => {
+      if (!widgetSettings) return [];
+
+      return Object.keys(widgetSettings.defaultSuggestions).map((key) => {
+         return widgetSettings.defaultSuggestions[
+            key as keyof typeof widgetSettings.defaultSuggestions
+         ];
+      });
+   }, [widgetSettings]);
 
    const { topElementRef, handleLoadMore, canLoadMore, isLoadingMore } =
       useInfiniteScroll({
@@ -151,7 +164,29 @@ export const WidgetChatScreen = () => {
                ))}
             </AIConversationContent>
          </AIConversation>
-         {/* TODO: Add suggestions */}
+
+         {toUIMessages(messages.results ?? [])?.length === 1 && (
+            <AISuggestions className="flex w-full flex-col items-end p-2">
+               {suggestions.map((s) => {
+                  if (!s) return null;
+
+                  return (
+                     <AISuggestion
+                        key={s}
+                        onClick={() => {
+                           form.setValue("message", s, {
+                              shouldValidate: true,
+                              shouldDirty: true,
+                              shouldTouch: true,
+                           });
+                           form.handleSubmit(onSubmit)();
+                        }}
+                        suggestion={s}
+                     />
+                  );
+               })}
+            </AISuggestions>
+         )}
 
          <Form {...form}>
             <AIInput
