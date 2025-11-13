@@ -163,6 +163,7 @@ export const WidgetChatScreen = () => {
                   </AIMessage>
                ))}
             </AIConversationContent>
+            <AIConversationScrollButton />
          </AIConversation>
 
          {toUIMessages(messages.results ?? [])?.length === 1 && (

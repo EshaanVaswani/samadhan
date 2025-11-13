@@ -12,6 +12,7 @@ import {
    loadingMessageAtom,
    organizationIdAtom,
    screenAtom,
+   vapiSecretsAtom,
    widgetSettingsAtom,
 } from "@/modules/widget/atoms/widget-atoms";
 import { WidgetHeader } from "@/modules/widget/ui/components/widget-header";
@@ -32,6 +33,7 @@ export const WidgetLoadingScreen = ({
    const setScreen = useSetAtom(screenAtom);
    const setErrorMessage = useSetAtom(errorMessageAtom);
    const setWidgetSettings = useSetAtom(widgetSettingsAtom);
+   const setVapiSecrets = useSetAtom(vapiSecretsAtom);
 
    const contactSessionId = useAtomValue(
       contactSessionIdAtomFamily(organizationId || "")
@@ -129,9 +131,40 @@ export const WidgetLoadingScreen = ({
 
       if (widgetSettings !== undefined) {
          setWidgetSettings(widgetSettings);
-         setStep("done");
+         setStep("vapi");
       }
    }, [step, widgetSettings, setStep, setLoadingMessage, setWidgetSettings]);
+
+   // Step 4: Load Vapi secrets (Optional)
+   const getVapiSecrets = useAction(api.public.secrets.getVapiSecrets);
+
+   useEffect(() => {
+      if (step !== "vapi") return;
+
+      if (!organizationId) {
+         setErrorMessage("Organization ID is required.");
+         setScreen("error");
+         return;
+      }
+
+      setLoadingMessage("Loading voice features...");
+      getVapiSecrets({ organizationId })
+         .then((secrets) => {
+            setVapiSecrets(secrets);
+            setStep("done");
+         })
+         .catch(() => {
+            setVapiSecrets(null);
+            setStep("done");
+         });
+   }, [
+      step,
+      organizationId,
+      setStep,
+      setLoadingMessage,
+      getVapiSecrets,
+      setVapiSecrets,
+   ]);
 
    useEffect(() => {
       if (step !== "done") return;
