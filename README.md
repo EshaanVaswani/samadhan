@@ -13,10 +13,10 @@ Built as a pnpm + Turbo monorepo with Convex backend.
 - [Architecture](#architecture)
 - [Monorepo Structure](#monorepo-structure)
 - [Setup Instructions (Getting Started)](#setup-instructions-getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Environment Variables](#environment-variables)
-  - [Install Dependencies](#install-dependencies)
-  - [Run the Apps](#run-the-apps)
+   - [Prerequisites](#prerequisites)
+   - [Environment Variables](#environment-variables)
+   - [Install Dependencies](#install-dependencies)
+   - [Run the Apps](#run-the-apps)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -48,7 +48,7 @@ Built as a pnpm + Turbo monorepo with Convex backend.
 
 ## Architecture
 
-![Architecture Diagram](/architecture.png)
+![Architecture Diagram](public/architecture.png)
 
 ---
 
